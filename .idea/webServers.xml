@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="a86bb8eb-ba22-43ff-a817-9d2d5dafe411" name="socket" url="https://socket.innovated.tech/">
+        <fileTransfer rootFolder="/home/socket" accessType="SFTP" host="innovated.tech" port="22" sshConfigId="09b8c902-2068-4746-bdb3-ff8a63b06313" sshConfig="socket@innovated.tech:22 password">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" keepAliveTimeout="0" passiveMode="true" shareSSLContext="true" isUseRsync="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>
