@@ -2,7 +2,7 @@
 <project version="4">
   <component name="dataSourceStorageLocal" created-in="WS-223.7571.168">
     <data-source name="# PROD PSQL" uuid="d0be9a1b-a27b-4fe0-b6db-dad19d2254d4">
-      <database-info product="PostgreSQL" version="13.8 (Debian 13.8-0+deb11u1)" jdbc-version="4.2" driver-name="PostgreSQL JDBC Driver" driver-version="42.5.0" dbms="POSTGRES" exact-version="13.8" exact-driver-version="42.5">
+      <database-info product="PostgreSQL" version="13.9 (Debian 13.9-0+deb11u1)" jdbc-version="4.2" driver-name="PostgreSQL JDBC Driver" driver-version="42.5.0" dbms="POSTGRES" exact-version="13.9" exact-driver-version="42.5">
         <identifier-quote-string>&quot;</identifier-quote-string>
       </database-info>
       <case-sensitivity plain-identifiers="lower" quoted-identifiers="exact" />
@@ -29,8 +29,13 @@
       <user-name>postgres</user-name>
       <schema-mapping>
         <introspection-scope>
-          <node kind="database" qname="@">
-            <node kind="schema" qname="@" />
+          <node negative="1">
+            <node kind="database">
+              <name qname="@" />
+              <name qname="wcadev_django" />
+              <node kind="schema" qname="@" />
+            </node>
+            <node kind="database" qname="wcadmin_django" />
           </node>
         </introspection-scope>
       </schema-mapping>
