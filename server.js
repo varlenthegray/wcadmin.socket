@@ -34,6 +34,8 @@ const pool = new Pool({
 
 io.adapter(createAdapter(pool));
 
+let sent_user;
+
 app.get('/', (req, res) => {
     res.sendFile(__dirname + '/index.html');
 });
@@ -87,11 +89,11 @@ app.post('/webhook', (req, res) => {
         }
 
         let queryText = `
-            INSERT INTO communication_textmessage (from_phone, to_phone, message, direction, read, timestamp, media_count, media, client_id, queued, message_uid)
-            VALUES ($1, $2, $3, '${direction}', False, now(), $4, $5, ${client_id}, ${queued}, $6)
+            INSERT INTO communication_textmessage (from_phone, to_phone, message, direction, read, timestamp, media_count, media, client_id, queued, message_uid, sent_by_id)
+            VALUES ($1, $2, $3, '${direction}', False, now(), $4, $5, ${client_id}, ${queued}, $6, $7)
             ON CONFLICT (message_uid) DO UPDATE SET queued = ${queued}`;
 
-        let queryValues = [from, to, body, num_media, media, message_uid];
+        let queryValues = [from, to, body, num_media, media, message_uid, sent_user];
 
         pool.query(queryText, queryValues, (err, res) => {
             if(err) throw err;
@@ -115,7 +117,7 @@ io.on('connection', (socket) => {
         io.emit('chat message', msg);
     });
 
-    socket.on('send text message', (msg, phone) => {
+    socket.on('send text message', (msg, phone, user_id) => {
         telnyx.messages
             .create({
                 text: msg,
@@ -124,6 +126,8 @@ io.on('connection', (socket) => {
             }, function(err, res) {
                 if(err) throw err;
             });
+
+        sent_user = user_id;
     });
 
     socket.on('mark client texts read', (phone) => {
