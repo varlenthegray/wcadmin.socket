@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="PublishConfigData" autoUpload="Always" serverName="socket" remoteFilesAllowedToDisappearOnAutoupload="false" confirmBeforeUploading="false">
+  <component name="PublishConfigData" autoUpload="Always" serverName="socketdev" remoteFilesAllowedToDisappearOnAutoupload="false" confirmBeforeUploading="false" showAutoUploadSettingsWarning="false">
     <option name="confirmBeforeUploading" value="false" />
     <serverData>
       <paths name="socket">
@@ -11,6 +11,16 @@
           <excludedPaths>
             <excludedPath local="true" path="$PROJECT_DIR$/../socketagain/socket.io/examples/private-messaging/server/node_modules" />
             <excludedPath local="true" path="$PROJECT_DIR$/../socketagain/socket.io/examples/private-messaging/server/package-lock.json" />
+          </excludedPaths>
+        </serverdata>
+      </paths>
+      <paths name="socketdev">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/public_html" local="$PROJECT_DIR$" web="/" />
+          </mappings>
+          <excludedPaths>
+            <excludedPath local="true" path="$PROJECT_DIR$/../socketagain/socket.io/examples/private-messaging/server/node_modules" />
           </excludedPaths>
         </serverdata>
       </paths>

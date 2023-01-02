@@ -1,4 +1,5 @@
-require('dotenv').config({path:'/home/socket/public_html/.env'});
+// require('dotenv').config({path:'/home/socket/public_html/.env'});
+require('dotenv').config({path:'/home/socketdev/public_html/.env'});
 const express = require('express');
 const app = express();
 const http = require('http');
@@ -75,32 +76,42 @@ app.post('/webhook', (req, res) => {
     // console.log(queryFindService);
 
     pool.query(queryFindService, queryFindServiceValues, (err, res) => {
-        if(err) throw err;
-
-        let db_client = res.rows[0];
-        let queued, client_id;
-
-        queued = !!payload.completed_at;
-
-        if(db_client) {
-            client_id = db_client.client_id;
-        } else {
-            client_id = null;
-        }
-
-        let queryText = `
-            INSERT INTO communication_textmessage (from_phone, to_phone, message, direction, read, timestamp, media_count, media, client_id, queued, message_uid, sent_by_id)
-            VALUES ($1, $2, $3, '${direction}', False, now(), $4, $5, ${client_id}, ${queued}, $6, $7)
-            ON CONFLICT (message_uid) DO UPDATE SET queued = ${queued}`;
-
-        let queryValues = [from, to, body, num_media, media, message_uid, sent_user];
-
-        pool.query(queryText, queryValues, (err, res) => {
+        try {
             if(err) throw err;
-            io.emit('received message', payload, db_client);
-        });
 
-        io.emit('update notifications', db_client, payload);
+            let db_client = res.rows[0];
+            let queued, client_id;
+
+            queued = !!payload.completed_at;
+
+            if(db_client) {
+                client_id = db_client.client_id;
+            } else {
+                client_id = null;
+            }
+
+            // console.log(`Sent User ID: ${sent_user}`);
+
+            let queryText = `
+                INSERT INTO communication_textmessage (from_phone, to_phone, message, direction, read, timestamp, media_count, media, client_id, queued, message_uid, sent_by_id)
+                VALUES ($1, $2, $3, '${direction}', False, now(), $4, $5, ${client_id}, ${queued}, $6, $7)
+                ON CONFLICT (message_uid) DO UPDATE SET queued = ${queued}`;
+
+            let queryValues = [from, to, body, num_media, media, message_uid, sent_user];
+
+            pool.query(queryText, queryValues, (err, res) => {
+                try {
+                    if(err) throw err;
+                    io.emit('received message', payload, db_client);
+                } catch (e) {
+                    console.log(e);
+                }
+            });
+
+            io.emit('update notifications', db_client, payload);
+        } catch (e) {
+            console.log(e)
+        }
     });
 
     res.end();
@@ -117,17 +128,79 @@ io.on('connection', (socket) => {
         io.emit('chat message', msg);
     });
 
-    socket.on('send text message', (msg, phone, user_id) => {
-        telnyx.messages
-            .create({
-                text: msg,
-                from: from_number,
-                to: phone
-            }, function(err, res) {
-                if(err) throw err;
-            });
+    socket.on('send text message', (msg, phone, user_id, template = false, attached_media = false) => {
+        if(msg && phone) {
+            if(template) {
+                let queryTemplate = `SELECT * FROM communication_textmessagetemplate WHERE id = $1`;
+                let queryTemplateValues = [template];
 
-        sent_user = user_id;
+                pool.query(queryTemplate, queryTemplateValues, (err, res) => {
+                    try {
+                        if(err) throw err;
+
+                        let db_template = res.rows[0];
+
+                        if(db_template['attachment']) {
+                            let media_url = `https://wcadev.innovated.tech/uploads/${db_template['attachment']}`;
+
+                            try {
+                                telnyx.messages.create({
+                                    text: msg,
+                                    from: from_number,
+                                    to: phone,
+                                    media_urls: [media_url]
+                                }, function(err, res) {
+                                    if(err) throw err;
+                                });
+                            } catch (e) {
+                                console.log(e);
+                            }
+                        } else {
+                            try {
+                                telnyx.messages.create({
+                                    text: msg,
+                                    from: from_number,
+                                    to: phone
+                                }, function(err, res) {
+                                    if(err) throw err;
+                                });
+                            } catch (e) {
+                                console.log(e);
+                            }
+                        }
+                    } catch (e) {
+                        console.log(e);
+                    }
+                });
+            } else if(attached_media) {
+                try {
+                    telnyx.messages.create({
+                        text: msg,
+                        from: from_number,
+                        to: phone,
+                        media_urls: [attached_media]
+                    }, function(err, res) {
+                        if(err) throw err;
+                    });
+                } catch (e) {
+                    console.log(e);
+                }
+            } else {
+                try {
+                    telnyx.messages.create({
+                        text: msg,
+                        from: from_number,
+                        to: phone
+                    }, function(err, res) {
+                        if(err) throw err;
+                    });
+                } catch (e) {
+                    console.log(e)
+                }
+            }
+
+            sent_user = user_id;
+        }
     });
 
     socket.on('mark client texts read', (phone) => {
@@ -136,19 +209,25 @@ io.on('connection', (socket) => {
             let queryUnreadValues = [phone]
 
             pool.query(queryUnread, queryUnreadValues, (err, res) => {
-                if(res.rows) {
-                    io.emit('client texts read', res.rows);
+                try {
+                    if(err) throw err;
+
+                    if(res.rows) {
+                        io.emit('client texts read', res.rows);
+                    }
+
+                    let queryMessage = `UPDATE communication_textmessage SET read = TRUE WHERE from_phone = $1 OR to_phone = $1 AND read = FALSE`;
+                    let queryValues = [phone]
+
+                    pool.query(queryMessage, queryValues);
+                } catch (e) {
+                    console.log(e);
                 }
-
-                let queryMessage = `UPDATE communication_textmessage SET read = TRUE WHERE from_phone = $1 OR to_phone = $1 AND read = FALSE`;
-                let queryValues = [phone]
-
-                pool.query(queryMessage, queryValues);
             });
         }
     });
 });
 
-server.listen(3002, () => {
-    console.log('Server listening on *:3002')
+server.listen(process.env.LISTEN_PORT, () => {
+    console.log(`Server listening on *:${process.env.LISTEN_PORT}`);
 });

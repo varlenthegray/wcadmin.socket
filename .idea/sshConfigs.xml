@@ -3,6 +3,7 @@
   <component name="SshConfigs">
     <configs>
       <sshConfig authType="PASSWORD" host="innovated.tech" id="09b8c902-2068-4746-bdb3-ff8a63b06313" port="22" nameFormat="DESCRIPTIVE" username="socket" useOpenSSHConfig="true" />
+      <sshConfig authType="PASSWORD" host="socketdev.innovated.tech" id="f32c34e8-4f0c-4b88-9200-ec0e40c6a63f" port="22" nameFormat="DESCRIPTIVE" username="socketdev" useOpenSSHConfig="true" />
     </configs>
   </component>
 </project>

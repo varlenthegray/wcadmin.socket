@@ -9,6 +9,13 @@
           </advancedOptions>
         </fileTransfer>
       </webServer>
+      <webServer id="31e9858b-3ec8-49e3-97b8-7d85e1938eea" name="socketdev" url="https://socketdev.innovated.tech">
+        <fileTransfer rootFolder="/home/socketdev" accessType="SFTP" host="socketdev.innovated.tech" port="22" sshConfigId="f32c34e8-4f0c-4b88-9200-ec0e40c6a63f" sshConfig="socketdev@socketdev.innovated.tech:22 password">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" keepAliveTimeout="0" passiveMode="true" shareSSLContext="true" isUseRsync="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
     </option>
   </component>
 </project>
