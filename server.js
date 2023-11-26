@@ -86,7 +86,10 @@ app.post('/webhook', (req, res) => {
     // Execute the above SQL query using a connection pool. The res parameter in the callback function is the result of the query execution.
     pool.query(queryFindService, queryFindServiceValues, (err, res) => {
         try {
-            if(err) throw err;
+            if(err) {
+                console.error(err);
+                return;
+            }
 
             // Assigns the first row of the returned result to the db_client variable
             let db_record = res.rows[0];
@@ -115,19 +118,22 @@ app.post('/webhook', (req, res) => {
             // Execute the above SQL query using a connection pool
             pool.query(queryText, queryValues, (err, res) => {
                 try {
-                    if(err) throw err;
+                    if(err) {
+                        console.error(err);
+                        return;
+                    }
 
                     // Emit the 'received message' event to all connected Socket.IO clients along with the payload and the client data (if any)
                     io.emit('received message', payload, db_record);
                 } catch (e) {
-                    console.log(e);
+                    console.error(e);
                 }
             });
 
             // Emit the 'update notifications' event to all connected Socket.IO clients along with the client data (if any) and the payload
             io.emit('update notifications', db_record, payload);
         } catch (e) {
-            console.log(e)
+            console.error(e)
         }
     });
 
@@ -137,10 +143,10 @@ app.post('/webhook', (req, res) => {
 
 
 io.on('connection', (socket) => {
-    console.log('a user connected');
+    // console.log('a user connected');
 
     socket.on('disconnect', () => {
-        console.log('user disconnected');
+        // console.log('user disconnected');
     });
 
     socket.on('chat message', (msg) => {
@@ -157,7 +163,10 @@ io.on('connection', (socket) => {
                 // queries the database for the template based on its ID
                 pool.query(queryTemplate, queryTemplateValues, (err, res) => {
                     try { // tries to execute the following code, catches and logs any errors
-                        if(err) throw err;
+                        if(err) {
+                            console.error(err);
+                            return;
+                        }
 
                         let db_template = res.rows[0];
 
@@ -173,10 +182,10 @@ io.on('connection', (socket) => {
                                     to: phone,
                                     media_urls: [media_url]
                                 }, function(err, res) {
-                                    if(err) throw err;
+                                    if(err) console.error(err);
                                 });
                             } catch (e) { // catches and logs any errors
-                                console.log(e);
+                                console.error(e);
                             }
                         } else { // if the template does not have an attachment
                             try { // tries to send the message without any media
@@ -185,19 +194,19 @@ io.on('connection', (socket) => {
                                     from: from_number,
                                     to: phone
                                 }, function(err, res) {
-                                    if(err) throw err;
+                                    if(err) console.error(err);
                                 });
                             } catch (e) { // catches and logs any errors
-                                console.log(e);
+                                console.error(e);
                             }
                         }
                     } catch (e) {
-                        console.log(e);
+                        console.error(e);
                     }
                 });
             } else if(attached_media) { // if an attached_media argument is provided (but not a template)
                 try { // tries to send the message with the attached media
-                    console.log(`Attached Media: ` + attached_media)
+                    // console.log(`Attached Media: ` + attached_media)
 
                     telnyx.messages.create({
                         text: msg,
@@ -205,24 +214,24 @@ io.on('connection', (socket) => {
                         to: phone,
                         media_urls: [attached_media]
                     }, function(err, res) {
-                        if(err) throw err;
+                        if(err) console.error(err);
                     });
                 } catch (err) { // catches and logs any errors
-                    console.log(err);
+                    console.error(err);
                 }
             } else { // if neither template nor attached_media arguments are provided
                 try { // tries to send the message without any media
-                    console.log('Received a message:', msg, ' from ', from_number, ' to ', phone)
+                    // console.log('Received a message:', msg, ' from ', from_number, ' to ', phone)
 
                     telnyx.messages.create({
                         text: msg,
                         from: from_number,
                         to: phone
                     }, function(err, res) {
-                        if(err) throw err;
+                        if(err) console.error(err);
                     });
                 } catch (e) { // catches and logs any errors
-                    console.log(e)
+                    console.error(e)
                 }
             }
 
@@ -243,7 +252,10 @@ io.on('connection', (socket) => {
             pool.query(queryUnread, queryUnreadValues, (err, res) => {
                 try {
                     // If there is an error, throw it
-                    if(err) throw err;
+                    if(err) {
+                        console.error(err);
+                        return;
+                    }
 
                     // If there are unread messages, emit 'client texts read' event with the rows data
                     if(res.rows) {
@@ -257,7 +269,7 @@ io.on('connection', (socket) => {
                     // Execute the query using Pool object
                     pool.query(queryMessage, queryValues);
                 } catch (e) {
-                    console.log(e);
+                    console.error(e);
                 }
             });
         }
